@@ -4,34 +4,41 @@
  * @flow
  */
 
-import React, { Component } from 'react';
-import {
-  Platform,
-  StyleSheet,
-  Text,
-  View
-} from 'react-native';
+import React, {Component} from 'react';
+import {Platform, StyleSheet, Text, View, Button} from 'react-native';
+import BluetoothNative from './BluetoothNative';
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' +
-    'Cmd+D or shake for dev menu',
-  android: 'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
+export default class App extends Component {
+  state = {
+    greeting: null
+  };
 
-export default class App extends Component<{}> {
+  componentWillMount() {
+    BluetoothNative
+      .emitter
+      .addListener('EXAMPLE_EVENT', event => {
+        console.log(event);
+        this.setState({greeting: event.greeting});
+      });
+  }
+
+  componentWillUnmount() {
+    BluetoothNative
+      .emitter
+      .removeAllListeners();
+  }
+
+  _onPress = () => {
+    BluetoothNative.exampleMethod();
+  };
+
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit App.js
-        </Text>
-        <Text style={styles.instructions}>
-          {instructions}
-        </Text>
+        <Text style={styles.welcome}>Welcome to React Native!</Text>
+        <Text>{BluetoothNative.EXAMPLE_CONSTANT}</Text>
+        <Text style={styles.instructions}>{this.state.greeting}</Text>
+        <Button title="Load native string" onPress={this._onPress}/>
       </View>
     );
   }
@@ -42,16 +49,16 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    backgroundColor: '#F5FCFF'
   },
   welcome: {
     fontSize: 20,
     textAlign: 'center',
-    margin: 10,
+    margin: 10
   },
   instructions: {
     textAlign: 'center',
     color: '#333333',
-    marginBottom: 5,
-  },
+    marginBottom: 5
+  }
 });
