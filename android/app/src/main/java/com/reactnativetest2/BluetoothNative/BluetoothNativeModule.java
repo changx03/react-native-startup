@@ -41,12 +41,18 @@ public class BluetoothNativeModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void exampleMethod () {
+    public void exampleMethod() {
         // An example native method that you will expose to React
         // https://facebook.github.io/react-native/docs/native-modules-android.html#the-toast-module
         final WritableMap event = Arguments.createMap();
         event.putString("greeting", "Hello world");
         emitDeviceEvent("EXAMPLE_EVENT", event);
+    }
+
+    @ReactMethod
+    public void bluetoothList() {
+        SearchTask searchTask = new SearchTask();
+        searchTask.execute(PrinterSetting.IF_TYPE_BLUETOOTH);
     }
 
     private static void emitDeviceEvent(String eventName, @Nullable WritableMap eventData) {

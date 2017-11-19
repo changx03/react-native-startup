@@ -4,8 +4,8 @@
  * @flow
  */
 
-import React, {Component} from 'react';
-import {Platform, StyleSheet, Text, View, Button} from 'react-native';
+import React, { Component } from 'react';
+import { Platform, StyleSheet, Text, View, Button } from 'react-native';
 import BluetoothNative from './BluetoothNative';
 
 export default class App extends Component {
@@ -18,7 +18,7 @@ export default class App extends Component {
       .emitter
       .addListener('EXAMPLE_EVENT', event => {
         console.log(event);
-        this.setState({greeting: event.greeting});
+        this.setState({ greeting: event.greeting });
       });
   }
 
@@ -32,13 +32,18 @@ export default class App extends Component {
     BluetoothNative.exampleMethod();
   };
 
+  _onPreseeBluetoothList = () => {
+    BluetoothNative.bluetoothList();
+  }
+
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.welcome}>Welcome to React Native!</Text>
         <Text>{BluetoothNative.EXAMPLE_CONSTANT}</Text>
         <Text style={styles.instructions}>{this.state.greeting}</Text>
-        <Button title="Load native string" onPress={this._onPress}/>
+        <Button title="Load native string" onPress={this._onPress} />
+        <Button title="Bluetooth list" onPress={this._onPreseeBluetoothList} />
       </View>
     );
   }
