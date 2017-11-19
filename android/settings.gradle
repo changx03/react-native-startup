@@ -1,0 +1,3 @@
+rootProject.name = 'reactNativeTest2'
+
+include ':app'
