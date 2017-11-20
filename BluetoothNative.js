@@ -1,11 +1,6 @@
-import {
-  NativeModules,
-  NativeEventEmitter
-} from 'react-native';
+import { NativeModules, NativeEventEmitter } from 'react-native';
 
-const {
-    BluetoothNative
-} = NativeModules;
+const { BluetoothNative } = NativeModules;
 const BluttoothEmitter = new NativeEventEmitter(BluetoothNative);
 
 export default {
@@ -14,6 +9,9 @@ export default {
   },
   bluetoothList() {
     return BluetoothNative.bluetoothList();
+  },
+  print(portName) {
+    return BluetoothNative.print(portName);
   },
   emitter: BluttoothEmitter,
   EXAMPLE_CONSTANT: BluetoothNative.EXAMPLE_CONSTANT,
