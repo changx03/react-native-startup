@@ -16,9 +16,11 @@ import com.starmicronics.stario.PortInfo;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
 import com.starmicronics.stario.StarPrinterStatus;
+import com.starmicronics.starioextension.ICommandBuilder;
 import com.starmicronics.starioextension.StarIoExt;
 import com.starmicronics.starioextension.StarIoExt.Emulation;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,6 +39,8 @@ public class BluetoothNativeModule extends ReactContextBaseJavaModule {
     private int mLanguage = PrinterSetting.LANGUAGE_ENGLISH;
     private int mPaperSize = PrinterSetting.PAPER_SIZE_THREE_INCH;
     private final Object lock;
+    private ICommandBuilder _builder;
+    private final static Charset encoding = Charset.forName("UTF-8");
 
     public BluetoothNativeModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -91,6 +95,46 @@ public class BluetoothNativeModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void append(String lineContent, Promise promise) {
+        try {
+            _builder.append(lineContent.getBytes(encoding));
+            promise.resolve("append");
+        } catch (Exception e) {
+            promise.reject("BUILDER_APPEND_ERROR", e);
+        }
+    }
+
+    @ReactMethod
+    public void beginDocument(Promise promise) {
+        try {
+            _builder = StarIoExt.createCommandBuilder(getEmulation());
+            _builder.beginDocument();
+
+            _builder.appendCodePage(ICommandBuilder.CodePageType.UTF8);
+
+            _builder.appendInternational(ICommandBuilder.InternationalType.USA);
+            _builder.appendCharacterSpace(0);
+
+//            _builder.appendAlignment(ICommandBuilder.AlignmentPosition.Center);
+
+            promise.resolve("builder created");
+        } catch (Exception e) {
+            promise.reject("ICommandBuilder_ERROR", e);
+        }
+    }
+
+    @ReactMethod
+    public void endDocument(Promise promise) {
+        try {
+            _builder.appendCutPaper(ICommandBuilder.CutPaperAction.PartialCutWithFeed);
+            _builder.endDocument();
+            promise.resolve("builder end");
+        } catch (Exception e) {
+            promise.reject("ICommandBuilder_ERROR", e);
+        }
+    }
+
+    @ReactMethod
     public void print(String portName) {
         System.out.println("execute print()");
         StarIOPort port = null;
@@ -99,8 +143,9 @@ public class BluetoothNativeModule extends ReactContextBaseJavaModule {
                 port = StarIOPort.getPort(portName, "Portable", 1000);
                 StarPrinterStatus status = port.beginCheckedBlock();
                 System.out.println(Arrays.toString(status.raw));
-                Emulation emulation = getEmulation();
-                byte[] command = new PrinterFunctions(emulation).createTextReceiptData();
+//                Emulation emulation = getEmulation();
+                //byte[] command = new PrinterFunctions(emulation).createTextReceiptData();
+                byte[] command = _builder.getCommands();
                 port.writePort(command, 0, command.length);
                 status = port.endCheckedBlock();
                 if (!status.offline) {
@@ -122,7 +167,7 @@ public class BluetoothNativeModule extends ReactContextBaseJavaModule {
     }
 
     private Emulation getEmulation() {
-        return  Emulation.StarPRNT;
+        return Emulation.StarPRNT;
     }
 
     private static void emitDeviceEvent(String eventName, @Nullable WritableMap eventData) {

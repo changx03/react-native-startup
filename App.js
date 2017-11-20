@@ -55,6 +55,20 @@ export default class App extends Component {
     this.state.printerList[0] && BluetoothNative.print('BT:00:15:0E:E5:75:DF');
   };
 
+  __onPressPrintBuilder = async () => {
+    await BluetoothNative.beginDocument();
+    await BluetoothNative.append("Using string builder\n");
+    await BluetoothNative.append("Using string builder\n");
+    await BluetoothNative.append("Using string builder\n");
+    await BluetoothNative.append("Using string builder\n");
+    await BluetoothNative.append("Using string builder\n");
+    await BluetoothNative.append("Using string builder\n");
+    await BluetoothNative.append("Using string builder\n");
+    await BluetoothNative.append("Using string builder\n");
+    await BluetoothNative.append("Using string builder\n");
+    await BluetoothNative.endDocument();
+    BluetoothNative.print('BT:00:15:0E:E5:75:DF');
+  }
   render() {
     return (
       <View style={styles.container}>
@@ -77,6 +91,8 @@ export default class App extends Component {
           />
           <View style={styles.separator} />
           <Button title="Test port open" onPress={this._onPressPortOpen} />
+          <View style={styles.separator} />
+          <Button title="_onPressPrintBuilder" onPress={this.__onPressPrintBuilder} />
         </ScrollView>
       </View>
     );

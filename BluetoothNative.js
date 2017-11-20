@@ -13,6 +13,15 @@ export default {
   print(portName) {
     return BluetoothNative.print(portName);
   },
+  append(lineContent) {
+    return BluetoothNative.append(lineContent);
+  },
+  beginDocument() {
+    return BluetoothNative.beginDocument();
+  },
+  endDocument() {
+    return BluetoothNative.endDocument();
+  },
   emitter: BluttoothEmitter,
   EXAMPLE_CONSTANT: BluetoothNative.EXAMPLE_CONSTANT,
 };

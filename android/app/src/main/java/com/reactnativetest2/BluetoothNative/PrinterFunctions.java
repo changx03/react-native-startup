@@ -19,14 +19,9 @@ public class PrinterFunctions {
 
     public byte[] createTextReceiptData() {
         _builder.beginDocument();
-
-        // TODO: Use List<LineContent> contents
         append3inchTextReceiptData(_builder, "Hello world\n");
-
         _builder.appendCutPaper(ICommandBuilder.CutPaperAction.PartialCutWithFeed);
-
         _builder.endDocument();
-
         return _builder.getCommands();
     }
 
