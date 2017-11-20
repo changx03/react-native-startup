@@ -2,6 +2,8 @@ package com.reactnativetest2.BluetoothNative;
 
 /**
  * Created by sunfishcc on 19/11/17.
+ *
+ * Printer config file from StarPRNT SDK
  */
 import android.content.Context;
 import android.content.SharedPreferences;

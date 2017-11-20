@@ -1,8 +1,7 @@
 package com.reactnativetest2.BluetoothNative;
 
-import android.content.Context;
-import android.os.Looper;
 import android.os.Handler;
+import android.os.Looper;
 
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
@@ -14,14 +13,14 @@ import com.starmicronics.stario.StarPrinterStatus;
  */
 
 public class SendCommandThread extends Thread {
+    private static final String PORT_SETTING = "Portable";
+    private static final int TIMEOUT = 1000;
+
     private final Object _lock;
     private Communication.SendCallback _callback;
     private byte[] _commands;
-
     private String _portName;
     private StarIOPort _port;
-    private static final String _portSettings = "Portable";
-    private static int _timeout = 1000;
 
     public SendCommandThread(Object lock, byte[] commands, String portName, Communication.SendCallback callback) {
         _lock = lock;
@@ -33,12 +32,12 @@ public class SendCommandThread extends Thread {
     @Override
     public void run() {
         Communication.Result communicateResult = Communication.Result.ErrorOpenPort;
-        boolean result = false;
+        Boolean result = false;
 
         synchronized (_lock) {
             try {
                 if (_port == null) {
-                    _port = StarIOPort.getPort(_portName, _portSettings, _timeout);
+                    _port = StarIOPort.getPort(_portName, PORT_SETTING, TIMEOUT);
                 }
                 if (_port == null) {
                     communicateResult = Communication.Result.ErrorOpenPort;
