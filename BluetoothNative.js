@@ -4,9 +4,6 @@ const { BluetoothNative } = NativeModules;
 const BluttoothEmitter = new NativeEventEmitter(BluetoothNative);
 
 export default {
-  exampleMethod() {
-    return BluetoothNative.exampleMethod();
-  },
   bluetoothList() {
     return BluetoothNative.bluetoothList();
   },

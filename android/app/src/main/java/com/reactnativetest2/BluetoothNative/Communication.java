@@ -28,16 +28,13 @@ public class Communication {
         void onStatus(StarPrinterStatus result);
     }
 
-    interface FirmwareInformationCallback {
-        void onFirmwareInformation(Map<String, String> firmwareInformationMap);
-    }
-
-    interface SerialNumberCallback {
-        void onSerialNumber(Communication.Result communicateResult, String serialNumber);
-    }
-
     interface SendCallback {
         void onStatus(boolean result, Communication.Result communicateResult);
+    }
+
+    public static void sendCommands(Object lock, byte[] commands, String portName, SendCallback callback) {
+        SendCommandThread thread = new SendCommandThread(lock, commands, portName, callback);
+        thread.start();
     }
 
 }

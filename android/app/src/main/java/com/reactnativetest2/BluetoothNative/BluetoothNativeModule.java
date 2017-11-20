@@ -1,7 +1,9 @@
 package com.reactnativetest2.BluetoothNative;
 
+import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.support.annotation.Nullable;
+import android.widget.Toast;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
@@ -15,14 +17,15 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.starmicronics.stario.PortInfo;
 import com.starmicronics.stario.StarIOPort;
 import com.starmicronics.stario.StarIOPortException;
-import com.starmicronics.stario.StarPrinterStatus;
 import com.starmicronics.starioextension.ICommandBuilder;
 import com.starmicronics.starioextension.StarIoExt;
 import com.starmicronics.starioextension.StarIoExt.Emulation;
 
 import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,22 +33,24 @@ import java.util.concurrent.ExecutionException;
 
 /**
  * Created by sunfishcc on 19/11/17.
+ *
+ * Known bug in Mashmallow: E/Surface: getSlotFromBufferLocked: unknown buffer: 0xb9a03ee8
  */
 
 public class BluetoothNativeModule extends ReactContextBaseJavaModule {
     public static final String REACT_CLASS = "BluetoothNative";
-    public static ReactApplicationContext reactContext;
+    private static ReactApplicationContext reactContext;
+    @SuppressLint("SimpleDateFormat")
+    private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
 
-    private int mLanguage = PrinterSetting.LANGUAGE_ENGLISH;
-    private int mPaperSize = PrinterSetting.PAPER_SIZE_THREE_INCH;
-    private final Object lock;
+    private final Object _starIOLock;
     private ICommandBuilder _builder;
     private final static Charset encoding = Charset.forName("UTF-8");
 
     public BluetoothNativeModule(ReactApplicationContext reactContext) {
         super(reactContext);
         BluetoothNativeModule.reactContext = reactContext;
-        lock = new Object();
+        _starIOLock = new Object();
     }
 
     @Override
@@ -58,20 +63,8 @@ public class BluetoothNativeModule extends ReactContextBaseJavaModule {
         // Export any constants to be used in your native module
         // https://facebook.github.io/react-native/docs/native-modules-android.html#the-toast-module
         final Map<String, Object> constants = new HashMap<>();
-        constants.put("EXAMPLE_CONSTANT", "example");
-
+//        constants.put("EXAMPLE_CONSTANT", "example");
         return constants;
-    }
-
-    @ReactMethod
-    public void exampleMethod() {
-        // An example native method that you will expose to React
-        // https://facebook.github.io/react-native/docs/native-modules-android.html#the-toast-module
-        System.out.println("execute exampleMethod()");
-
-        final WritableMap event = Arguments.createMap();
-        event.putString("greeting", "Hello world");
-        emitDeviceEvent("EXAMPLE_EVENT", event);
     }
 
     @ReactMethod
@@ -95,75 +88,64 @@ public class BluetoothNativeModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void append(String lineContent, Promise promise) {
-        try {
-            _builder.append(lineContent.getBytes(encoding));
-            promise.resolve("append");
-        } catch (Exception e) {
-            promise.reject("BUILDER_APPEND_ERROR", e);
-        }
+    public void append(String lineContent) {
+        System.out.println("execute append()");
+        _builder.append(lineContent.getBytes(encoding));
     }
 
     @ReactMethod
-    public void beginDocument(Promise promise) {
-        try {
-            _builder = StarIoExt.createCommandBuilder(getEmulation());
-            _builder.beginDocument();
-
-            _builder.appendCodePage(ICommandBuilder.CodePageType.UTF8);
-
-            _builder.appendInternational(ICommandBuilder.InternationalType.USA);
-            _builder.appendCharacterSpace(0);
-
-//            _builder.appendAlignment(ICommandBuilder.AlignmentPosition.Center);
-
-            promise.resolve("builder created");
-        } catch (Exception e) {
-            promise.reject("ICommandBuilder_ERROR", e);
-        }
+    public void beginDocument() {
+        System.out.println("execute beginDocument()");
+        _builder = StarIoExt.createCommandBuilder(getEmulation());
+        _builder.beginDocument();
+        _builder.appendCodePage(ICommandBuilder.CodePageType.UTF8);
+        _builder.appendInternational(ICommandBuilder.InternationalType.USA);
+        _builder.appendCharacterSpace(0);
     }
 
     @ReactMethod
-    public void endDocument(Promise promise) {
-        try {
-            _builder.appendCutPaper(ICommandBuilder.CutPaperAction.PartialCutWithFeed);
-            _builder.endDocument();
-            promise.resolve("builder end");
-        } catch (Exception e) {
-            promise.reject("ICommandBuilder_ERROR", e);
-        }
+    public void endDocument() {
+        System.out.println("execute endDocument()");
+        _builder.appendCutPaper(ICommandBuilder.CutPaperAction.PartialCutWithFeed);
+        _builder.endDocument();
     }
 
     @ReactMethod
     public void print(String portName) {
         System.out.println("execute print()");
-        StarIOPort port = null;
-        synchronized (lock) {
-            try {
-                port = StarIOPort.getPort(portName, "Portable", 1000);
-                StarPrinterStatus status = port.beginCheckedBlock();
-                System.out.println(Arrays.toString(status.raw));
-//                Emulation emulation = getEmulation();
-                //byte[] command = new PrinterFunctions(emulation).createTextReceiptData();
-                byte[] command = _builder.getCommands();
-                port.writePort(command, 0, command.length);
-                status = port.endCheckedBlock();
-                if (!status.offline) {
-                    System.out.println("Print successful end");
-                } else {
-                    // check status
-                }
 
-            } catch (StarIOPortException e) {
+        System.out.println("Start: " + dateFormat.format(new Date()));
+        Communication.sendCommands(_starIOLock, _builder.getCommands(), portName, _callback);
 
-            } finally {
-                try {
-                    StarIOPort.releasePort(port);
-                } catch (StarIOPortException e) {
-
-                }
-            }
-        }
+//        StarIOPort port = null;
+//        synchronized (lock) {
+//            try {
+//                port = StarIOPort.getPort(portName, "Portable", 1000, getReactApplicationContext());
+//                System.out.println(port.getPortName() + " " + port.getPortSettings());
+//                StarPrinterStatus status;   // = port.beginCheckedBlock();
+//                byte[] command = _builder.getCommands();
+//                port.writePort(command, 0, command.length);
+//                status = port.endCheckedBlock();
+//                if (!status.offline) {
+//                    Toast.makeText(getReactApplicationContext(), "Print success", Toast.LENGTH_SHORT).show();
+//                } else {
+//                    // check status list
+//                    if (status.receiptPaperEmpty) {
+//                        Toast.makeText(getReactApplicationContext(), "Warning: Receipt paper empty", Toast.LENGTH_SHORT).show();
+//                    }
+//                }
+//
+//            } catch (StarIOPortException e) {
+//                System.err.println(e.getMessage());
+//            } finally {
+//                try {
+//                    StarIOPort.releasePort(port);
+//                } catch (StarIOPortException e) {
+//                    System.err.println(e.getMessage());
+//                }
+//                System.out.println("End: " + dateFormat.format(new Date()));
+//            }
+//        }
     }
 
     private Emulation getEmulation() {
@@ -176,10 +158,11 @@ public class BluetoothNativeModule extends ReactContextBaseJavaModule {
         reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, eventData);
     }
 
-    class SearchTask extends AsyncTask<String, Void, List<PortInfo>> {
+    @SuppressLint("StaticFieldLeak")
+    private class SearchTask extends AsyncTask<String, Void, List<PortInfo>> {
         private List<PortInfo> mPortList;
 
-        public SearchTask() {
+        SearchTask() {
             super();
         }
 
@@ -208,16 +191,14 @@ public class BluetoothNativeModule extends ReactContextBaseJavaModule {
         }
     }
 
-    public static String addItem(PortInfo info) {
+    private static String addItem(PortInfo info) {
         String modalName = "";
         String portName = "";
-//            String macAddress = "";
 
         // Bluetooth
         if (info.getPortName().startsWith(PrinterSetting.IF_TYPE_BLUETOOTH)) {
             modalName = info.getPortName().substring(PrinterSetting.IF_TYPE_BLUETOOTH.length());
             portName = PrinterSetting.IF_TYPE_BLUETOOTH + info.getMacAddress();
-//                macAddress = info.getMacAddress();
         }
         return modalName + " (" + portName + ")";
     }
@@ -229,4 +210,38 @@ public class BluetoothNativeModule extends ReactContextBaseJavaModule {
         }
         return deviceList;
     }
+
+    private final Communication.SendCallback _callback = new Communication.SendCallback() {
+        @Override
+        public void onStatus(boolean result, Communication.Result communicateResult) {
+            System.out.println("End: " + dateFormat.format(new Date()));
+
+            String msg;
+            switch (communicateResult) {
+                case Success:
+                    msg = "Success!";
+                    break;
+                case ErrorOpenPort:
+                    msg = "Fail to openPort";
+                    break;
+                case ErrorBeginCheckedBlock:
+                    msg = "Printer is offline (beginCheckedBlock)";
+                    break;
+                case ErrorEndCheckedBlock:
+                    msg = "Printer is offline (endCheckedBlock)";
+                    break;
+                case ErrorReadPort:
+                    msg = "Read port error (readPort)";
+                    break;
+                case ErrorWritePort:
+                    msg = "Write port error (writePort)";
+                    break;
+                default:
+                    msg = "Unknown error";
+                    break;
+            }
+
+            Toast.makeText(getReactApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+        }
+    };
 }

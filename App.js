@@ -51,35 +51,17 @@ export default class App extends Component {
     });
   };
 
-  _onPressPortOpen = () => {
-    this.state.printerList[0] && BluetoothNative.print('BT:00:15:0E:E5:75:DF');
-  };
-
-  __onPressPrintBuilder = async () => {
+  _onPressPrintBuilder = async () => {
     await BluetoothNative.beginDocument();
-    await BluetoothNative.append("Using string builder\n");
-    await BluetoothNative.append("Using string builder\n");
-    await BluetoothNative.append("Using string builder\n");
-    await BluetoothNative.append("Using string builder\n");
-    await BluetoothNative.append("Using string builder\n");
-    await BluetoothNative.append("Using string builder\n");
-    await BluetoothNative.append("Using string builder\n");
-    await BluetoothNative.append("Using string builder\n");
-    await BluetoothNative.append("Using string builder\n");
+    await BluetoothNative.append('Using string builder\n');
     await BluetoothNative.endDocument();
     BluetoothNative.print('BT:00:15:0E:E5:75:DF');
-  }
+  };
   render() {
     return (
       <View style={styles.container}>
         <ScrollView>
           <Text style={styles.welcome}>Welcome to React Native!</Text>
-          <Text>{BluetoothNative.EXAMPLE_CONSTANT}</Text>
-          <Text style={styles.instructions}>{this.state.greeting}</Text>
-          <Button
-            title="Load string from native code"
-            onPress={this._onPress}
-          />
           <View style={styles.separator} />
           <FlatList
             data={this.state.printerList}
@@ -90,9 +72,10 @@ export default class App extends Component {
             onPress={this._onPressBluetoothList}
           />
           <View style={styles.separator} />
-          <Button title="Test port open" onPress={this._onPressPortOpen} />
-          <View style={styles.separator} />
-          <Button title="_onPressPrintBuilder" onPress={this.__onPressPrintBuilder} />
+          <Button
+            title="Print with Native content builder"
+            onPress={this._onPressPrintBuilder}
+          />
         </ScrollView>
       </View>
     );
