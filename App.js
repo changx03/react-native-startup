@@ -75,6 +75,38 @@ export default class App extends Component {
     BluetoothNative.endDocument();
     BluetoothNative.print('BT:00:15:0E:E5:75:DF');
   };
+
+  _appendAlignment = () => {
+    BluetoothNative.beginDocument();
+    BluetoothNative.append('Left\n');
+    BluetoothNative.appendAlignment(BluetoothNative.ALIGN_CENTER);
+    BluetoothNative.append('center1\n');
+    BluetoothNative.append('center2\n');
+    BluetoothNative.appendAlignment(BluetoothNative.ALIGN_RIGHT);
+    BluetoothNative.append('Right1\n');
+    BluetoothNative.append('Right2\n');
+    BluetoothNative.endDocument();
+    BluetoothNative.print('BT:00:15:0E:E5:75:DF');
+  };
+
+  _appendMultiple = () => {
+    BluetoothNative.beginDocument();
+    BluetoothNative.appendMultiple('X2 size\n', 2);
+    BluetoothNative.appendMultiple('X3 size\n', 3);
+    BluetoothNative.append('Back to normal\n');
+    BluetoothNative.endDocument();
+    BluetoothNative.print('BT:00:15:0E:E5:75:DF');
+  };
+
+  _appendEmphasis = () => {
+    BluetoothNative.beginDocument();
+    BluetoothNative.appendLineSeparator();
+    BluetoothNative.appendEmphasis('append Emphasis\n');
+    BluetoothNative.appendLineSeparator();
+    BluetoothNative.endDocument();
+    BluetoothNative.print('BT:00:15:0E:E5:75:DF');
+  };
+
   render() {
     return (
       <View style={styles.container}>
@@ -103,6 +135,21 @@ export default class App extends Component {
           <Button
             title="Print Native align right"
             onPress={this._onPressPrintAlignRight}
+          />
+          <View style={styles.separator} />
+          <Button
+            title="Print Native appendAlignment"
+            onPress={this._appendAlignment}
+          />
+          <View style={styles.separator} />
+          <Button
+            title="Print Native appendMultiple"
+            onPress={this._appendMultiple}
+          />
+          <View style={styles.separator} />
+          <Button
+            title="Print Native appendEmphasis"
+            onPress={this._appendEmphasis}
           />
         </ScrollView>
       </View>

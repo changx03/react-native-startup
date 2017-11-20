@@ -26,18 +26,26 @@ export default {
   append(content) {
     return BluetoothNative.append(content);
   },
-  appendAlignment() {
+  // position should use constants from BluetoothNative
+  appendAlignment(position) {
     return BluetoothNative.appendAlignment(position);
   },
+  // This will reset the global position
+  // position should use constants from BluetoothNative
+  // position does not apply when input string does not have EOL ('\n')
   appendWithAlignment(content, position) {
     return BluetoothNative.appendWithAlignment(content, position);
   },
+  // Use the multiplier to control font size
   appendMultiple(content, multiplier) {
     return BluetoothNative.appendMultiple(content, multiplier);
   },
   appendEmphasis(content) {
     return BluetoothNative.appendEmphasis(content);
   },
+  // width should use constants from BluetoothNative.
+  // height is the # of dots (60 be default).
+  // barcode should not include EOL
   appendBarcode(barcode, width, height, showCharacters) {
     return BluetoothNative.appendBarcode(
       barcode,
