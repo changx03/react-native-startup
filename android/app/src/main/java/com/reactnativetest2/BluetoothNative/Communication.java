@@ -29,11 +29,11 @@ public class Communication {
     }
 
     interface SendCallback {
-        void onStatus(boolean result, Communication.Result communicateResult);
+        void onStatus(boolean result, Communication.Result communicateResult, StarIOPort port);
     }
 
-    public static void sendCommands(Object lock, byte[] commands, String portName, SendCallback callback) {
-        SendCommandThread thread = new SendCommandThread(lock, commands, portName, callback);
+    public static void sendCommands(Object lock, byte[] commands, StarIOPort port, String portName, SendCallback callback) {
+        SendCommandThread thread = new SendCommandThread(lock, commands, port, portName, callback);
         thread.start();
     }
 

@@ -40,12 +40,13 @@ import java.util.concurrent.ExecutionException;
 public class BluetoothNativeModule extends ReactContextBaseJavaModule {
     private static final String REACT_CLASS = "BluetoothNative";
     @SuppressLint("SimpleDateFormat")
-    private final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
+    public static final DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
     private final Object _starIOLock;
     private final static Charset _encoding = Charset.forName("UTF-8");
 
     private static ReactApplicationContext reactContext;
     private ICommandBuilder _builder;
+    private StarIOPort _port;
 
     BluetoothNativeModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -159,8 +160,13 @@ public class BluetoothNativeModule extends ReactContextBaseJavaModule {
     public void print(String portName) {
         System.out.println("execute print()");
 
+        if (_port != null) {
+            System.out.println("Port:" + _port.getPortName());
+        } else {
+            System.out.println("Port: null");
+        }
         System.out.println("Start: " + dateFormat.format(new Date()));
-        Communication.sendCommands(_starIOLock, _builder.getCommands(), portName, _callback);
+        Communication.sendCommands(_starIOLock, _builder.getCommands(), _port, portName, _callback);
     }
 
 //    @SuppressWarnings("unused")
@@ -238,9 +244,9 @@ public class BluetoothNativeModule extends ReactContextBaseJavaModule {
 
     private final Communication.SendCallback _callback = new Communication.SendCallback() {
         @Override
-        public void onStatus(boolean result, Communication.Result communicateResult) {
+        public void onStatus(boolean result, Communication.Result communicateResult, StarIOPort port) {
             System.out.println("End of Print call back: " + dateFormat.format(new Date()));
-
+            _port = port;
             String msg;
             switch (communicateResult) {
                 case Success:
